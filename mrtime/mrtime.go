@@ -53,6 +53,14 @@ func FullDateIDN(input interface{}) (string, error) {
 	return fmt.Sprintf("%d %s %d", day, month, year), nil
 }
 
+func CurrentUnixTime() int64 {
+	return time.Now().Unix()
+}
+
+func CurrentTimeString() string {
+	return time.Now().Format("15:04:05")
+}
+
 func converter(input interface{}, layout string) (string, error) {
 	switch v := input.(type) {
 	case time.Time:
