@@ -15,18 +15,55 @@ var monthIDN = []string{
 	"Juli", "Agustus", "September", "Oktober", "November", "Desember",
 }
 
+var currentTimezone, _ = time.LoadLocation("Asia/Jakarta")
+
+func SetTimezone(tz string) error {
+	zone, err := time.LoadLocation(tz)
+	if err != nil {
+		return err
+	}
+
+	currentTimezone = zone
+	return nil
+}
+
+// Convert datetime yang diinput ke dalam format "YYYY-mm-dd HH:MM:SS"
+//
+// How to use:
+//
+//	func main(){
+//		t,_ := Date("2025-01-01")
+//		fmt.Println(t)
+//	}
 func DateTime(input interface{}) (string, error) {
 	layout := "2006-01-02 15:04:05"
 	res, err := converter(input, layout)
 	return res, err
 }
 
+// Convert tanggal yang diinput menjadi format "2006-01-02"
+//
+// How to use:
+//
+//	func main(){
+//		t,_ := Date("2025-01-01")
+//		fmt.Println(t)
+//	}
 func Date(input interface{}) (string, error) {
 	layout := "2006-01-02"
 	res, err := converter(input, layout)
 	return res, err
 }
 
+// FullDateEN convert waktu yang diinput menjadi format "1 January 2022" dalam bahasa inggris
+// berdasarkan timezone yang sudah diatur dengan `SetTimezone`.
+//
+// How to use:
+//
+//	func main(){
+//		t,_ := FullDateEN("2025-01-01")
+//		fmt.Println(t)
+//	}
 func FullDateEN(input interface{}) (string, error) {
 	layout := "2006-01-02"
 	res, err := converter(input, layout)
@@ -40,6 +77,15 @@ func FullDateEN(input interface{}) (string, error) {
 	return fmt.Sprintf("%d %s %d", day, month, year), nil
 }
 
+// FullDateEN convert waktu yang diinput menjadi format "1 Januari 2022" dalam bahasa indonesia
+// berdasarkan timezone yang sudah diatur dengan `SetTimezone`.
+//
+// Parameters:
+//   - input (string,int,dateTime): contoh: 2025-01-02 atau 171233122.
+//
+// Returns:
+//   - string: DateTime seperti "1 January 2022".
+//   - error: Mengambalikan error apabila format input tidak sesuai
 func FullDateIDN(input interface{}) (string, error) {
 	layout := "2006-01-02"
 	res, err := converter(input, layout)
@@ -54,11 +100,11 @@ func FullDateIDN(input interface{}) (string, error) {
 }
 
 func CurrentUnixTime() int64 {
-	return time.Now().Unix()
+	return time.Now().In(currentTimezone).Unix()
 }
 
 func CurrentTimeString() string {
-	return time.Now().Format("15:04:05")
+	return time.Now().In(currentTimezone).Format("15:04:05")
 }
 
 func converter(input interface{}, layout string) (string, error) {
@@ -72,9 +118,9 @@ func converter(input interface{}, layout string) (string, error) {
 		}
 		return parsedTime.Format(layout), nil
 	case int64:
-		return time.Unix(v, 0).Format(layout), nil
+		return time.Unix(v, 0).In(currentTimezone).Format(layout), nil
 	case float64:
-		return time.Unix(int64(v), 0).Format(layout), nil
+		return time.Unix(int64(v), 0).In(currentTimezone).Format(layout), nil
 	default:
 		return "", fmt.Errorf("unsupport type")
 	}
